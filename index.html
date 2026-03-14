@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>House Price Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui; background: #f5f5f5; display: flex; justify-content: center; padding: 2rem; }
+    .card { background: white; border-radius: 12px; padding: 2rem; width: 100%; max-width: 600px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    h2 { font-size: 20px; margin-bottom: 1.5rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 12px; color: #666; }
+    input[type=number] { padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .toggles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 1rem 0; }
+    .tog { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+    input[type=checkbox] { width: 16px; height: 16px; }
+    button { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 1rem; }
+    button:hover { background: #333; }
+    #result { margin-top: 1.5rem; text-align: center; font-size: 28px; font-weight: 600; color: #1a1a1a; display: none; }
+    #sublabel { font-size: 13px; color: #888; margin-top: 4px; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2>House Price Predictor</h2>
+  <div class="grid">
+    <div class="field"><label>Living Area (sq ft)</label><input id="living_area" type="number" value="1800"></div>
+    <div class="field"><label>Land Area (sq ft)</label><input id="land_area" type="number" value="5000"></div>
+    <div class="field"><label>Quality Score (1-10)</label><input id="quality_score" type="number" value="7" min="1" max="10"></div>
+    <div class="field"><label>Garage Capacity</label><input id="garage_capacity" type="number" value="2"></div>
+    <div class="field"><label>Garage Area (sq ft)</label><input id="garage_area" type="number" value="400"></div>
+    <div class="field"><label>Bathrooms (max 6)</label>
+<input id="bathrooms" type="number" value="2" min="1" max="6"></div>
+
+<div class="field"><label>Bedrooms (max 7)</label>
+<input id="bedrooms" type="number" value="3" min="1" max="7"></div>
+
+    <div class="field"><label>Total Rooms (max 10)</label>
+    <input id="total_rooms" type="number" value="7" min="1" max="10"></div>
+    <div class="field"><label>Sale Year</label><input id="sale_year" type="number" value="2023"></div>
+    <div class="field"><label>House Age Future</label><input id="house_age_future" type="number" value="5"></div>
+    <div class="field">
+  <label>Location</label>
+  <select id="location">
+    <option value="1">Rural</option>
+    <option value="0">Urban</option>
+  </select>
+</div>
+  </div>
+  <div class="toggles">
+    <label class="tog"><input type="checkbox" id="has_pool"> Pool</label>
+    <label class="tog"><input type="checkbox" id="has_gym"> Gym</label>
+    <label class="tog"><input type="checkbox" id="has_garden" checked> Garden</label>
+    <label class="tog"><input type="checkbox" id="has_garage" checked> Garage</label>
+    <label class="tog"><input type="checkbox" id="has_fireplace"> Fireplace</label>
+  </div>
+  <button onclick="predict()">Predict Sale Price</button>
+  <div id="result"></div>
+  <div id="sublabel"></div>
+</div>
+
+<script>
+async function predict() {
+  const g = id => document.getElementById(id);
+  const b = id => g(id).checked ? 1 : 0;
+
+  // max values
+  const MAX_BEDROOMS = 7;
+  const MAX_BATHROOMS = 6;
+  const MAX_ROOMS = 10;
+
+  // invert values
+  const bedrooms_inv = MAX_BEDROOMS - (+g("bedrooms").value) + 1;
+  const bathrooms_inv = MAX_BATHROOMS - (+g("bathrooms").value) + 1;
+  const rooms_inv = MAX_ROOMS - (+g("total_rooms").value) + 1;
+
+  const res = await fetch("http://localhost:8000/predict", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      living_area: +g("living_area").value,
+      land_area: +g("land_area").value,
+      quality_score: +g("quality_score").value,
+      garage_capacity: +g("garage_capacity").value,
+      garage_area: +g("garage_area").value,
+      bathrooms: bathrooms_inv,
+      bedrooms: bedrooms_inv,
+      total_rooms: rooms_inv,
+      has_pool: b("has_pool"),
+      has_gym: b("has_gym"),
+      has_garden: b("has_garden"),
+      has_garage: b("has_garage"),
+      has_fireplace: b("has_fireplace"),
+      sale_year: +g("sale_year").value,
+      house_age_future: +g("house_age_future").value,
+      location: +g("location").value
+    })
+  });
+
+  const data = await res.json();
+
+  g("result").style.display = "block";
+  g("result").textContent = "$" + data.predicted_price.toLocaleString();
+  g("sublabel").textContent = "Predicted by CatBoost model (91.6% accuracy)";
+}
+</script>
+</body>
+</html>
