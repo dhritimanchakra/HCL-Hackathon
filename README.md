@@ -43,7 +43,7 @@ House-Price-Predictor
 
 The project uses the **Ames Housing Dataset**, which contains detailed information about residential homes including:
 
-* Living area
+* Total House area
 * Lot size
 * Overall house quality
 * Garage capacity
