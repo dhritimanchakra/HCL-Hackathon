@@ -37,7 +37,13 @@ House-Price-Predictor
 └── README.md
 ```
 
----
+## System Architecture
+
+<p align="center">
+  <img src="model_architecture_and_dataflow.png" width="850">
+  <br>
+  <em>Figure: End-to-end architecture of the House Price Prediction System</em>
+</p>
 
 #  Dataset
 
