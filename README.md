@@ -282,6 +282,16 @@ Features:
 
 The frontend sends a request to the FastAPI backend and displays the predicted value.
 
+
+## Demo
+
+<p align="center">
+  <img src="demo_result.jpg" width="850">
+  <br>
+  <em>Figure: House Price Prediction System Demo</em>
+</p>
+
+
 ---
 
 # Technologies Used
